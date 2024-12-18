@@ -1,0 +1,233 @@
+openapi: '3.0.3'
+info:
+  title: Banking API
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:  
+  /usuario:
+    post:
+      tags:
+        - Usuários
+      summary: Cadastrar usuário
+      parameters:
+        - in: body
+          name: Cadastro de usuario
+          description: Dados do usuário
+          required: true
+          schema:
+            type: object
+            properties:
+              nome:
+                type: string
+              cpf:
+                type: string
+              email:
+                type: string
+              telefone:
+                type: string
+      responses:
+        '200':
+          description: "Usuario cadastrado com sucesso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  nome:
+                    type: string
+                  cpf:
+                    type: string
+                  email:
+                    type: string
+                  telefone:
+                    type: string  
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string   
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string                     
+  /usuario/{id}:
+    get:
+      tags:
+        - Usuários
+      summary: Consultar usuário
+      parameters:
+        - in: path
+          name: id
+          description: Consulta de usuário por id
+          required: true
+          schema:
+            type: string          
+      responses:
+        '200':
+          description: "Consulta realizada com sucesso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nome:
+                    type: string
+                  cpf:
+                    type: string
+                  email:
+                    type: string
+                  telefone:
+                    type: string    
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string
+    put:
+      tags:
+        - Usuários
+      summary: Alterar usuário
+      parameters:
+        - in: path
+          name: id
+          description: Id do usuário a ser alterado
+          required: true
+          schema:
+            type: string
+        - in: body
+          name: Alteração de usuário
+          description: Campos a serem alterados
+          required: true
+          schema:
+            type: object
+            properties:
+              nome:
+                type: string
+              cpf:
+                type: string
+              email:
+                type: string
+              telefone:
+                type: string
+      responses:
+        '200':
+          description: "Usuario cadastrado com sucesso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nome:
+                    type: string
+                  cpf:
+                    type: string
+                  email:
+                    type: string
+                  telefone:
+                    type: string  
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string   
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string              
+    delete:
+      tags:
+        - Usuários
+      summary: Deletar usuário
+      parameters:
+        - in: query
+          name: id
+          description: Deleta usuário por id
+          required: true
+          schema:
+            type: string          
+      responses:
+        '200':
+          description: "OK"          
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: integer
+                  erro_msg:
+                    type: string                               

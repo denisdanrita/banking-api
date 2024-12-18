@@ -1,0 +1,24 @@
+openapi: '3.0.3'
+info:
+  title: API Banking
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /checkstatus:
+    get:
+      parameters:
+      - name: ngrok-skip-browser-warning
+        in: header
+        description: Hash key validation
+        required: true
+        schema:
+          type: string
+      summary: Check status of api. 
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
