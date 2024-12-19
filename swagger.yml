@@ -6,6 +6,21 @@ servers:
   - url: https://api.server.test/v1
 paths:  
   /usuario:
+    get:
+      tags:
+        - Usuários
+      summary: Listar usuários
+      parameters:
+        - in: query
+          name: Nome
+          description: Nome do usuário
+          schema:
+            type: string          
+        - in: query
+          name: CPF
+          description: CPF do usuário
+          schema:
+            type: string
     post:
       tags:
         - Usuários
