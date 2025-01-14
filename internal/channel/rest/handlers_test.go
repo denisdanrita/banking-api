@@ -26,8 +26,9 @@ func TestValidarUsuarioFaltandoCPF(t *testing.T) {
 		Email: "aaaa@gmail.com",
 	}
 	erros := validarDadosUsuario(usuario)
-	assert.Equal(t, 1, len(erros))
+	assert.Equal(t, 2, len(erros))
 	assert.Equal(t,  "Campo CPF não preenchido", erros[0])
+	assert.Equal(t,  "CPF deve ter 11 caracteres", erros[1])
 }
 
 func TestValidarUsuarioEmailInvalido(t *testing.T) {
