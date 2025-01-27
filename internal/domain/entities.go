@@ -1,10 +1,14 @@
 package domain
 
+import "time"
+
 type Usuario struct {
-	Nome     string `json:"nome,omitempty"`
-	CPF      string `json:"cpf"`
-	Telefone string `json:"telefone"`
-	Email    string `json:"email,omitempty"`
+	Id 		   string `firestore:"id"`
+	Nome     string `firestore:"nome"`
+	CPF      string `firestore:"cpf"`
+	Telefone string `firestore:"telefone"`
+	Email    string `firestore:"email"` 
+	CreatedAt time.Time `firestore:"created_at"`
 }
 
 type Error struct {

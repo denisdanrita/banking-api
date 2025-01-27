@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"banking/internal/domain"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,7 +8,7 @@ import (
 
 
 func TestValidarUsuarioOK(t *testing.T) {
-	usuario := domain.Usuario{	
+	usuario := UsuarioRequest{	
 		Nome: 	 "João",	
 		CPF: 	 "12345678901",
 		Telefone: "12345678901",
@@ -20,7 +19,7 @@ func TestValidarUsuarioOK(t *testing.T) {
 }
 
 func TestValidarUsuarioFaltandoCPF(t *testing.T) {
-	usuario := domain.Usuario{	
+	usuario := UsuarioRequest{	
 		Nome: 	 "João",		
 		Telefone: "12345678901",
 		Email: "aaaa@gmail.com",
@@ -32,7 +31,7 @@ func TestValidarUsuarioFaltandoCPF(t *testing.T) {
 }
 
 func TestValidarUsuarioEmailInvalido(t *testing.T) {
-	usuario := domain.Usuario{	
+	usuario := UsuarioRequest{	
 		Nome: 	 "João",	
 		CPF: 	 "12345678901",
 		Telefone: "12345678901",
@@ -44,7 +43,7 @@ func TestValidarUsuarioEmailInvalido(t *testing.T) {
 }
 
 func TestValidarUsuarioNomeMaiorQue50(t *testing.T) {
-	usuario := domain.Usuario{	
+	usuario := UsuarioRequest{	
 		Nome: 	 "marcosmarcosmarcosmarcosmarcosmarcosmarcosmarcosmarcosmarcosmarcos",
 		CPF: 	 "12345678901",
 		Telefone: "12345678901",
