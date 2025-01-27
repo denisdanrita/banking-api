@@ -159,11 +159,11 @@ func AlterarUsuario(response http.ResponseWriter, request *http.Request) {
 
 	user, err := dbClient.AlterarUsuario(id)
 	if err != nil {
-		log.Error().Err(err).Msg("Erro ao deletar usuário")
+		log.Error().Err(err).Msg("Erro ao alterar usuário")
 		response.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(response).Encode(ResponseError{
-			Code:    "005",
-			Message: "Erro ao deletar usuário",
+			Code:    "008",
+			Message: "Erro ao alterar usuário",
 		})
 		return
 	}
@@ -171,17 +171,11 @@ func AlterarUsuario(response http.ResponseWriter, request *http.Request) {
 	if user == nil {
 		response.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(response).Encode(ResponseError{
-			Code:    "006",
+			Code:    "009",
 			Message: "Usuário não encontrado",
 		})
 		return
 	}	
 
-
-
-	
-
-
-
-
+	json.NewEncoder(response).Encode(&user)
 }	
