@@ -4,7 +4,6 @@ import (
 	"banking/internal/domain"
 	"encoding/json"
 	"net/http"
-	"net/mail"
 	"time"
 
 	"github.com/google/uuid"
@@ -69,41 +68,7 @@ func UsuarioRequestToDomain(request UsuarioRequest) domain.Usuario{
 	return objeto
 }
 
-func validarDadosUsuario(user UsuarioRequest) []string {
-	var erros []string
-
-	if user.Nome == "" {
-		erros = append(erros, "Campo nome não preenchido")	
-	}
-
-	if user.CPF == "" {
-		erros = append(erros, "Campo CPF não preenchido")	
-	}
-
-	if user.Telefone == "" {
-		erros = append(erros, "Campo telefone não preenchido")			
-	}
-
-	if user.Email == "" {
-		erros = append(erros, "Campo email não preenchido")			
-	}
-
-	if len(user.Nome) > 50 {
-		erros = append(erros, "Nome deve ter no máximo 50 caracteres")		
-	}	
-
-	if len(user.CPF) < 11 {
-		erros = append(erros, "CPF deve ter 11 caracteres")		
-	}	
-
-	if _, err := mail.ParseAddress(user.Email); err != nil {
-		erros = append(erros, "Email inválido")		
-	}	
-	
-	return erros
-}
-
-func ConsultarUsuario(response http.ResponseWriter, request *http.Request) {
+func ConsultarUsuarioID(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("Content-Type", "application/json")
 	vars := mux.Vars(request)
 	id := vars["id"]
@@ -139,3 +104,84 @@ func ConsultarUsuario(response http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(response).Encode(responseObject)
 
 }
+
+func DeletarUsuario(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	vars := mux.Vars(request)
+	id := vars["id"]
+
+	user, err := dbClient.DeleteUsuario(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao deletar usuário")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "005",
+			Message: "Erro ao deletar usuário",
+		})
+		return
+	}
+
+	if user == nil {
+		response.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "006",
+			Message: "Usuário não encontrado",
+		})
+		return
+	}	
+
+		json.NewEncoder(response).Encode(map[string]interface{}{
+			"status":  http.StatusOK,
+			"message": "Usuário deletado com sucesso",
+		})
+	}
+
+func ConsultarUsuario(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	users, err := dbClient.GetUsuarios()
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao consultar usuários")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "007",
+			Message: "Erro ao consultar usuários",
+		})
+		return
+	}
+
+	json.NewEncoder(response).Encode(&users)
+}
+
+func AlterarUsuario(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	vars := mux.Vars(request)
+	id := vars["id"]
+
+	user, err := dbClient.AlterarUsuario(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao deletar usuário")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "005",
+			Message: "Erro ao deletar usuário",
+		})
+		return
+	}
+
+	if user == nil {
+		response.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "006",
+			Message: "Usuário não encontrado",
+		})
+		return
+	}	
+
+
+
+	
+
+
+
+
+}	
