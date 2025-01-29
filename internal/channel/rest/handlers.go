@@ -4,9 +4,7 @@ import (
 	"banking/internal/domain"
 	"encoding/json"
 	"net/http"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
@@ -44,28 +42,15 @@ func CadastrarUsuario(response http.ResponseWriter, request *http.Request) {
 		})
 		return
 	}
-	responseObject := UsuarioResponse{
-		Id:       newUser.Id,
-		Nome:     newUser.Nome,
-		CPF:      newUser.CPF,
-		Telefone: newUser.Telefone,
-		Email:    newUser.Email,
-		CreatedAt: newUser.CreatedAt.Format(time.RFC3339),	
-	}
+
+	responseObject := usuarioToResponse(*newUser)
+
 	json.NewEncoder(response).Encode(responseObject)
 }
 
 func UsuarioRequestToDomain(request UsuarioRequest) domain.Usuario{
-	newUUID := uuid.New().String()		
-	objeto := domain.Usuario{
-		Id:       newUUID,
-		Nome:     request.Nome,
-		CPF:      request.CPF,
-		Telefone: request.Telefone,
-		Email:    request.Email,
-		CreatedAt: time.Now(),
-	}
-	return objeto
+	objeto := usuarioToDomain(request)	
+		return objeto
 }
 
 func ConsultarUsuarioID(response http.ResponseWriter, request *http.Request) {
@@ -93,16 +78,9 @@ func ConsultarUsuarioID(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	responseObject := UsuarioResponse{
-		Id:       user.Id,
-		Nome:     user.Nome,
-		CPF:      user.CPF,
-		Telefone: user.Telefone,
-		Email:    user.Email,
-		CreatedAt: user.CreatedAt.Format(time.RFC3339),	
-	}
-	json.NewEncoder(response).Encode(responseObject)
+	responseObject := usuarioToResponse(*user)
 
+	json.NewEncoder(response).Encode(responseObject)
 }
 
 func DeletarUsuario(response http.ResponseWriter, request *http.Request) {
@@ -153,29 +131,66 @@ func ConsultarUsuario(response http.ResponseWriter, request *http.Request) {
 }
 
 func AlterarUsuario(response http.ResponseWriter, request *http.Request) {
-	response.Header().Add("Content-Type", "application/json")
+	response.Header().Add("Content-Type", "application/json")	
+	// lê o id da URL
 	vars := mux.Vars(request)
 	id := vars["id"]
 
-	user, err := dbClient.AlterarUsuario(id)
+	// lê o corpo da requisição
+	var userRequest UsuarioRequest
+	decoder := json.NewDecoder(request.Body)
+	decoder.Decode(&userRequest)
+
+	// buscar dados atuais no banco
+	databaseUser, err := dbClient.GetUsuario(id)
 	if err != nil {
-		log.Error().Err(err).Msg("Erro ao alterar usuário")
+		log.Error().Err(err).Msg("Erro ao consultar usuário")
 		response.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(response).Encode(ResponseError{
 			Code:    "008",
-			Message: "Erro ao alterar usuário",
+			Message: "Erro ao consultar usuário",
 		})
 		return
 	}
-
-	if user == nil {
+	if databaseUser == nil {
 		response.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(response).Encode(ResponseError{
 			Code:    "009",
 			Message: "Usuário não encontrado",
 		})
 		return
+	}
+
+	// alterar os campos no objeto do banco de acordo com o que veio na requisição
+	if userRequest.Nome != "" {
+		databaseUser.Nome = userRequest.Nome
+	}
+	if userRequest.Email != "" {
+		databaseUser.Email = userRequest.Email
+	}
+	if userRequest.Telefone != "" {
+		databaseUser.Telefone = userRequest.Telefone
+	}
+
+	// salvar no banco
+	_, err = dbClient.AlterarUsuario(*databaseUser)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao alterar usuário")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "010",
+			Message: "Erro ao alterar usuário",
+		})
 	}	
 
-	json.NewEncoder(response).Encode(&user)
-}	
+	responseObject := usuarioToResponse(*databaseUser)
+
+	json.NewEncoder(response).Encode(responseObject)
+}
+
+
+
+
+
+
+	

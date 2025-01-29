@@ -88,26 +88,26 @@ func (client FirestoreClient) GetUsuarios() (*[]domain.Usuario, error) {
 	return &users, nil
 }	
 
-func (client FirestoreClient) AlterarUsuario(id string) (*domain.Usuario, error) {
+func (client FirestoreClient) AlterarUsuario(data domain.Usuario) (*domain.Usuario, error) {
 	doc, err := client.client.Collection("usuario").
-		Where("id", "==", id).
+		Where("id", "==", data.Id).
 		Documents(context.Background()).Next()
+	
 	if err != nil {
-		log.Error().Err(err).Msg("Error getting document")
+		log.Error().Err(err).Msg("Error getting document") 
 		return nil, err
 	}
-	var user domain.Usuario
-	doc.DataTo(&user)
-	updates := []firestore.Update{
-		{Path: "fieldName", Value: "newValue"}, // Replace with actual field and value
-	}
-	_, err = doc.Ref.Update(context.Background(), updates)
+	_, err = doc.Ref.Update(context.Background(), []firestore.Update{
+		{Path: "nome", Value: data.Nome},
+		{Path: "email", Value: data.Email},
+		{Path: "telefone", Value: data.Telefone},
+	})
+	
 	if err != nil {
 		log.Error().Err(err).Msg("Error updating document")
 		return nil, err
 	}	
-	return &user, nil
-
+	return &data, nil
 }	
 
 
