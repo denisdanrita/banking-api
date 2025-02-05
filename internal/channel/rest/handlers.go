@@ -9,14 +9,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-
-
 func CadastrarUsuario(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("Content-Type", "application/json")
 	var user UsuarioRequest
 
 	decoder := json.NewDecoder(request.Body)
 	decoder.Decode(&user)
+
+	log.Info().Any("user", user).Msg("Requisição cadastrar usuário")
 
 	erros := validarDadosUsuario(user)
 	if len(erros) > 0 {
@@ -25,10 +25,12 @@ func CadastrarUsuario(response http.ResponseWriter, request *http.Request) {
 		for _, erro := range erros {
 			errosConcatenados += erro + ";"
 		}
-		json.NewEncoder(response).Encode(ResponseError{
+		responseError := ResponseError{
 			Code:    "001",
 			Message: errosConcatenados,
-		})
+		}
+		json.NewEncoder(response).Encode(responseError)
+		log.Info().AnErr("erros", responseError).Msg("Erro ao validar dados do usuário")
 		return
 	}
 
@@ -46,17 +48,19 @@ func CadastrarUsuario(response http.ResponseWriter, request *http.Request) {
 	responseObject := usuarioToResponse(*newUser)
 
 	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("user", responseObject).Msg("Retorno cadastrar usuário")
 }
 
-func UsuarioRequestToDomain(request UsuarioRequest) domain.Usuario{
-	objeto := usuarioToDomain(request)	
-		return objeto
+func UsuarioRequestToDomain(request UsuarioRequest) domain.Usuario {
+	objeto := usuarioToDomain(request)
+	return objeto
 }
 
 func ConsultarUsuarioID(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("Content-Type", "application/json")
 	vars := mux.Vars(request)
 	id := vars["id"]
+	log.Info().Str("id", id).Msg("Consultar usuário por ID")
 
 	user, err := dbClient.GetUsuario(id)
 	if err != nil {
@@ -81,12 +85,14 @@ func ConsultarUsuarioID(response http.ResponseWriter, request *http.Request) {
 	responseObject := usuarioToResponse(*user)
 
 	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("user", responseObject).Msg("Retorno consultar usuário por ID")
 }
 
 func DeletarUsuario(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("Content-Type", "application/json")
 	vars := mux.Vars(request)
 	id := vars["id"]
+	log.Info().Str("id", id).Msg("Deletar usuário")
 
 	user, err := dbClient.DeleteUsuario(id)
 	if err != nil {
@@ -106,13 +112,14 @@ func DeletarUsuario(response http.ResponseWriter, request *http.Request) {
 			Message: "Usuário não encontrado",
 		})
 		return
-	}	
-
-		json.NewEncoder(response).Encode(map[string]interface{}{
-			"status":  http.StatusOK,
-			"message": "Usuário deletado com sucesso",
-		})
 	}
+
+	json.NewEncoder(response).Encode(map[string]interface{}{
+		"status":  http.StatusOK,
+		"message": "Usuário deletado com sucesso",
+	})
+	log.Info().Any("user", user).Msg("Retorno deletar usuário")
+}
 
 func ConsultarUsuario(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("Content-Type", "application/json")
@@ -128,18 +135,21 @@ func ConsultarUsuario(response http.ResponseWriter, request *http.Request) {
 	}
 
 	json.NewEncoder(response).Encode(&users)
+	log.Info().Any("users", users).Msg("Retorno consultar usuários")
 }
 
 func AlterarUsuario(response http.ResponseWriter, request *http.Request) {
-	response.Header().Add("Content-Type", "application/json")	
+	response.Header().Add("Content-Type", "application/json")
 	// lê o id da URL
 	vars := mux.Vars(request)
 	id := vars["id"]
+	log.Info().Str("id", id).Msg("Alterar usuário")
 
 	// lê o corpo da requisição
 	var userRequest UsuarioRequest
 	decoder := json.NewDecoder(request.Body)
 	decoder.Decode(&userRequest)
+	log.Info().Any("userRequest", userRequest).Msg("Corpo da requisição")
 
 	// buscar dados atuais no banco
 	databaseUser, err := dbClient.GetUsuario(id)
@@ -181,16 +191,14 @@ func AlterarUsuario(response http.ResponseWriter, request *http.Request) {
 			Code:    "010",
 			Message: "Erro ao alterar usuário",
 		})
-	}	
+	}
 
 	responseObject := usuarioToResponse(*databaseUser)
 
 	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("user", response).Msg("Retorno alterar usuário")
 }
 
+func AlterarSenha(response http.ResponseWriter, request *http.Request) {
 
-
-
-
-
-	
+}

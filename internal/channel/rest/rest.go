@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
+
 var dbClient *firestore.FirestoreClient
 
 func NewServer() {
@@ -18,6 +19,7 @@ func NewServer() {
 	router.HandleFunc("/usuario/{id}", ConsultarUsuarioID).Methods(http.MethodGet)
 	router.HandleFunc("/usuario/{id}", DeletarUsuario).Methods(http.MethodDelete)
 	router.HandleFunc("/usuario/{id}", AlterarUsuario).Methods(http.MethodPut)
+	router.HandleFunc("/usuario/{id}/senha", AlterarSenha).Methods(http.MethodPut)
 
 	log.Info().Msg("Starting server on port 8100")
 
