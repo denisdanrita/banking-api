@@ -5,6 +5,8 @@ type UsuarioRequest struct {
 	CPF      string `json:"cpf"`
 	Telefone string `json:"telefone"`
 	Email    string `json:"email,omitempty"`
+	UserName string `json:"username,omitempty"`
+	Senha    string `json:"senha,omitempty"`
 }
 
 type UsuarioResponse struct {
@@ -14,6 +16,7 @@ type UsuarioResponse struct {
 	Telefone  string `json:"telefone"`
 	Email     string `json:"email,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
+	Token     string `json:"token,omitempty"`
 }
 
 type ResponseError struct {
@@ -23,4 +26,23 @@ type ResponseError struct {
 
 func (e ResponseError) Error() string {
 	return e.Code + ": " + e.Message
+}
+
+type ClienteRequest struct {
+	Nome     string `json:"nome,omitempty"`
+	CPF      string `json:"cpf"`
+	Telefone string `json:"telefone"`
+	Email    string `json:"email,omitempty"`
+	Endereço string `json:"endereco,omitempty"`
+}
+
+type ClienteResponse struct {
+	Id        string `json:"id,omitempty"`
+	Nome      string `json:"nome,omitempty"`
+	CPF       string `json:"cpf"`
+	Telefone  string `json:"telefone"`
+	Email     string `json:"email,omitempty"`
+	Endereço  string `json:"endereco,omitempty"`
+	CreatedAt string `json:"created_at,omitempty"`
+	Token     string `json:"token,omitempty"`
 }

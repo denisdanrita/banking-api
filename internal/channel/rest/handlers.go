@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"banking/internal/domain"
 	"encoding/json"
 	"net/http"
 
@@ -34,7 +33,7 @@ func CadastrarUsuario(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	newUser, err := dbClient.AddUsuario(UsuarioRequestToDomain(user))
+	newUser, err := dbClient.AddUsuario(usuarioToDomain(user))
 	if err != nil {
 		log.Error().Err(err).Msg("Erro ao salvar usuário")
 		response.WriteHeader(http.StatusInternalServerError)
@@ -45,15 +44,10 @@ func CadastrarUsuario(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	responseObject := usuarioToResponse(*newUser)
+	responseObject := usuarioToResponse(*newUser, true)
 
 	json.NewEncoder(response).Encode(responseObject)
 	log.Info().Any("user", responseObject).Msg("Retorno cadastrar usuário")
-}
-
-func UsuarioRequestToDomain(request UsuarioRequest) domain.Usuario {
-	objeto := usuarioToDomain(request)
-	return objeto
 }
 
 func ConsultarUsuarioID(response http.ResponseWriter, request *http.Request) {
@@ -82,7 +76,7 @@ func ConsultarUsuarioID(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	responseObject := usuarioToResponse(*user)
+	responseObject := usuarioToResponse(*user, false)
 
 	json.NewEncoder(response).Encode(responseObject)
 	log.Info().Any("user", responseObject).Msg("Retorno consultar usuário por ID")
@@ -193,7 +187,7 @@ func AlterarUsuario(response http.ResponseWriter, request *http.Request) {
 		})
 	}
 
-	responseObject := usuarioToResponse(*databaseUser)
+	responseObject := usuarioToResponse(*databaseUser, false)
 
 	json.NewEncoder(response).Encode(responseObject)
 	log.Info().Any("user", response).Msg("Retorno alterar usuário")
@@ -201,4 +195,46 @@ func AlterarUsuario(response http.ResponseWriter, request *http.Request) {
 
 func AlterarSenha(response http.ResponseWriter, request *http.Request) {
 
+}
+
+func CadastrarCliente(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	var cliente ClienteRequest
+
+	decoder := json.NewDecoder(request.Body)
+	decoder.Decode(&cliente)
+
+	log.Info().Any("user", cliente).Msg("Requisição cadastrar cliente")
+
+	erros := validarDadosCliente(cliente)
+	if len(erros) > 0 {
+		response.WriteHeader(http.StatusBadRequest)
+		errosConcatenados := ""
+		for _, erro := range erros {
+			errosConcatenados += erro + ";"
+		}
+		responseError := ResponseError{
+			Code:    "001",
+			Message: errosConcatenados,
+		}
+		json.NewEncoder(response).Encode(responseError)
+		log.Info().AnErr("erros", responseError).Msg("Erro ao validar dados do cliente")
+		return
+	}
+
+	newCliente, err := dbClient.AddCliente(clienteToDomain(cliente))
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao salvar cliente")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "002",
+			Message: "Erro ao salvar cliente",
+		})
+		return
+	}
+
+	responseObject := clienteToResponse(*newCliente, true)
+
+	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("user", responseObject).Msg("Retorno cadastrar usuário")
 }

@@ -3,9 +3,11 @@ package firestore
 import (
 	"banking/internal/domain"
 	"context"
+	"fmt"
 
 	"cloud.google.com/go/firestore"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/api/iterator"
 )
 
 
@@ -110,7 +112,50 @@ func (client FirestoreClient) AlterarUsuario(data domain.Usuario) (*domain.Usuar
 	return &data, nil
 }	
 
+func (client FirestoreClient) GetUsuarioByToken(token string) (*domain.Usuario, error) {
+	doc, err := client.client.Collection("usuario").
+		Where("token", "==", token).
+		Documents(context.Background()).Next()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting document")
+		return nil, err
+	}
+	var user domain.Usuario
+	doc.DataTo(&user)
+	return &user, nil
 
+}
+
+func (client FirestoreClient) AddCliente(data domain.Cliente) (*domain.Cliente, error) {
+	ctx := context.Background()
+
+	if err := client.checkClienteExists(ctx, "cpf", data.CPF); err != nil {
+		return nil, err
+	}
+	_, _, err := client.client.Collection("cliente").Add(context.Background(), &data)
+	if err != nil {
+		log.Error().Err(err).Msg("Error adding document")
+		return nil, err
+	}
+	return &data, nil
+}
+
+func (client FirestoreClient) checkClienteExists(ctx context.Context, fieldName string, value string) error {
+	query := client.client.Collection("cliente").Where(fieldName, "==", value).Limit(1).Documents(ctx)
+	doc, err := query.Next()
+	if err != nil && err != iterator.Done {
+		log.Error().Err(err).Str("field", fieldName).Msg("Error querying Firestore for existing client")
+		return err
+	}
+
+	if doc != nil {
+		err := fmt.Errorf("client with %s '%s' already exists", fieldName, value)
+		log.Warn().Err(err).Str("field", fieldName).Msg("Client already exists")
+		return err
+	}
+
+	return nil
+}
 
 	
 
