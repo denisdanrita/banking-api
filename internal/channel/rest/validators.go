@@ -55,7 +55,7 @@ func validarDadosCliente(user ClienteRequest) []string {
 		erros = append(erros, "Campo email não preenchido")
 	}
 
-	if user.Endereço == "" {
+	if user.Endereco == "" {
 		erros = append(erros, "Campo endereço não preenchido")
 	}
 

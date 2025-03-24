@@ -33,7 +33,7 @@ type ClienteRequest struct {
 	CPF      string `json:"cpf"`
 	Telefone string `json:"telefone"`
 	Email    string `json:"email,omitempty"`
-	Endereço string `json:"endereco,omitempty"`
+	Endereco string `json:"endereco,omitempty"`
 }
 
 type ClienteResponse struct {

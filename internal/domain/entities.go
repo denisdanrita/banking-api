@@ -24,6 +24,6 @@ type Cliente struct {
 	CPF       string `firestore:"cpf"`
 	Telefone  string `firestore:"telefone"`
 	Email     string `firestore:"email"`
-	Endereço  string `firestore:"endereco"`
+	Endereco  string `firestore:"endereco"`
 	CreatedAt time.Time `firestore:"created_at"`
 }

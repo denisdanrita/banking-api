@@ -233,8 +233,152 @@ func CadastrarCliente(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	responseObject := clienteToResponse(*newCliente, true)
+	responseObject := clienteToResponse(*newCliente)
 
 	json.NewEncoder(response).Encode(responseObject)
 	log.Info().Any("user", responseObject).Msg("Retorno cadastrar usuário")
+}
+
+func ConsultarClienteID(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	vars := mux.Vars(request)
+	id := vars["id"]
+	log.Info().Str("id", id).Msg("Consultar cliente por ID")
+
+	cliente, err := dbClient.GetCliente(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao consultar cliente")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "003",
+			Message: "Erro ao consultar cliente",
+		})
+		return
+	}
+
+	if cliente == nil {
+		response.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "004",
+			Message: "Cliente não encontrado",
+		})
+		return
+	}
+
+	responseObject := clienteToResponse(*cliente)
+
+	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("cliente", responseObject).Msg("Retorno consultar cliente por ID")
+}
+
+func AlterarCliente(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	// lê o id da URL
+	vars := mux.Vars(request)
+	id := vars["id"]
+	log.Info().Str("id", id).Msg("Alterar cliente")
+
+	// lê o corpo da requisição
+	var cliRequest ClienteRequest
+	decoder := json.NewDecoder(request.Body)
+	decoder.Decode(&cliRequest)
+	log.Info().Any("clienteRequest", cliRequest).Msg("Corpo da requisição")
+
+	if cliRequest.Nome != "" {
+		response.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "005",
+			Message: "Nome não pode ser alterado",
+		})
+		return
+	}
+
+	if cliRequest.CPF != "" {
+		response.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "005",
+			Message: "CPF não pode ser alterado",
+		})
+		return
+	}
+
+	// buscar dados atuais no banco
+	databaseCliente, err := dbClient.GetCliente(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao consultar cliente")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "008",
+			Message: "Erro ao consultar cliente",
+		})
+		return
+	}
+	if databaseCliente == nil {
+		response.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "009",
+			Message: "Cliente não encontrado",
+		})
+		return
+	}
+
+	// alterar os campos no objeto do banco de acordo com o que veio na requisição
+	if cliRequest.Email != "" {
+		databaseCliente.Email = cliRequest.Email
+	}
+	if cliRequest.Telefone != "" {
+		databaseCliente.Telefone = cliRequest.Telefone
+	}
+	if cliRequest.Endereco != "" {
+		databaseCliente.Endereco = cliRequest.Endereco
+	}
+
+	// salvar no banco
+	_, err = dbClient.AlterarCliente(*databaseCliente)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao alterar cliente")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "010",
+			Message: "Erro ao alterar cliente",
+		})
+	}
+
+	responseObject := clienteToResponse(*databaseCliente)
+
+	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("user", response).Msg("Retorno alterar cliente")
+}
+
+func DeletarCliente(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	vars := mux.Vars(request)
+	id := vars["id"]
+	log.Info().Str("id", id).Msg("Deletar cliente")
+
+	cliente, err := dbClient.DeleteCliente(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao deletar cliente")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "005",
+			Message: "Erro ao deletar cliente",
+		})
+		return
+	}
+
+	if cliente == nil {
+		response.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "006",
+			Message: "Cliente não encontrado",
+		})
+		return
+	}
+
+	json.NewEncoder(response).Encode(map[string]interface{}{
+		"status":  http.StatusOK,
+		"message": "Cliente deletado com sucesso",
+	})
+	log.Info().Any("user", cliente).Msg("Retorno deletar cliente")
 }

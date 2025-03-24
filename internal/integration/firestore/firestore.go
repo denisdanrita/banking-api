@@ -10,14 +10,13 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-
 var firestoreClient *FirestoreClient
 
 type FirestoreClient struct {
 	client *firestore.Client
 }
 
-func NewConnection() *FirestoreClient{
+func NewConnection() *FirestoreClient {
 	if firestoreClient != nil {
 		return firestoreClient
 	}
@@ -72,7 +71,7 @@ func (client FirestoreClient) DeleteUsuario(id string) (*domain.Usuario, error) 
 	}
 	return &user, nil
 
-}	
+}
 
 func (client FirestoreClient) GetUsuarios() (*[]domain.Usuario, error) {
 	iter := client.client.Collection("usuario").Documents(context.Background())
@@ -88,15 +87,15 @@ func (client FirestoreClient) GetUsuarios() (*[]domain.Usuario, error) {
 		users = append(users, user)
 	}
 	return &users, nil
-}	
+}
 
 func (client FirestoreClient) AlterarUsuario(data domain.Usuario) (*domain.Usuario, error) {
 	doc, err := client.client.Collection("usuario").
 		Where("id", "==", data.Id).
 		Documents(context.Background()).Next()
-	
+
 	if err != nil {
-		log.Error().Err(err).Msg("Error getting document") 
+		log.Error().Err(err).Msg("Error getting document")
 		return nil, err
 	}
 	_, err = doc.Ref.Update(context.Background(), []firestore.Update{
@@ -104,13 +103,13 @@ func (client FirestoreClient) AlterarUsuario(data domain.Usuario) (*domain.Usuar
 		{Path: "email", Value: data.Email},
 		{Path: "telefone", Value: data.Telefone},
 	})
-	
+
 	if err != nil {
 		log.Error().Err(err).Msg("Error updating document")
 		return nil, err
-	}	
+	}
 	return &data, nil
-}	
+}
 
 func (client FirestoreClient) GetUsuarioByToken(token string) (*domain.Usuario, error) {
 	doc, err := client.client.Collection("usuario").
@@ -157,12 +156,57 @@ func (client FirestoreClient) checkClienteExists(ctx context.Context, fieldName 
 	return nil
 }
 
-	
+func (client FirestoreClient) GetCliente(id string) (*domain.Cliente, error) {
+	doc, err := client.client.Collection("cliente").
+		Where("id", "==", id).
+		Documents(context.Background()).Next()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting document")
+		return nil, err
+	}
+	var cliente domain.Cliente
+	doc.DataTo(&cliente)
+	return &cliente, nil
 
+}
 
+func (client FirestoreClient) AlterarCliente(data domain.Cliente) (*domain.Cliente, error) {
+	doc, err := client.client.Collection("cliente").
+		Where("id", "==", data.Id).
+		Documents(context.Background()).Next()
 
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting document")
+		return nil, err
+	}
+	_, err = doc.Ref.Update(context.Background(), []firestore.Update{
+		{Path: "email", Value: data.Email},
+		{Path: "telefone", Value: data.Telefone},
+		{Path: "endereco", Value: data.Endereco},
+	})
 
+	if err != nil {
+		log.Error().Err(err).Msg("Error updating document")
+		return nil, err
+	}
+	return &data, nil
+}
 
+func (client FirestoreClient) DeleteCliente(id string) (*domain.Cliente, error) {
+	doc, err := client.client.Collection("cliente").
+		Where("id", "==", id).
+		Documents(context.Background()).Next()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting document")
+		return nil, err
+	}
+	var cliente domain.Cliente
+	doc.DataTo(&cliente)
+	_, err = doc.Ref.Delete(context.Background())
+	if err != nil {
+		log.Error().Err(err).Msg("Error deleting document")
+		return nil, err
+	}
+	return &cliente, nil
 
-
-
+}

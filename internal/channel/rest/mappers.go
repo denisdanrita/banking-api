@@ -47,7 +47,7 @@ func clienteToDomain(request ClienteRequest) domain.Cliente {
 		CPF:       request.CPF,
 		Telefone:  request.Telefone,
 		Email:     request.Email,
-		Endereço:  request.Endereço,
+		Endereco:  request.Endereco,
 		CreatedAt: now,
 	}
 }
@@ -59,7 +59,7 @@ func clienteToResponse(newCliente domain.Cliente) ClienteResponse {
 		CPF:       newCliente.CPF,
 		Telefone:  newCliente.Telefone,
 		Email:     newCliente.Email,
-		Endereço:  newCliente.Endereço,
+		Endereço:  newCliente.Endereco,
 		CreatedAt: newCliente.CreatedAt.Format(time.RFC3339),
 	}
 	return clienteResponse
