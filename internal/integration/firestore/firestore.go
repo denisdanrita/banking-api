@@ -4,7 +4,6 @@ import (
 	"banking/internal/domain"
 	"context"
 	"fmt"
-
 	"cloud.google.com/go/firestore"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/iterator"
@@ -208,5 +207,115 @@ func (client FirestoreClient) DeleteCliente(id string) (*domain.Cliente, error) 
 		return nil, err
 	}
 	return &cliente, nil
+}
 
+func (client FirestoreClient) AddConta(data domain.Conta) (*domain.Conta, error) {
+	ctx := context.Background()
+	err := client.checkExists(ctx, nil, &data.NumeroConta)
+
+	err = client.checkExists(ctx, &data.Documento, nil)
+
+
+	err = client.checkContaDocExists(ctx, "numero_conta", data.NumeroConta)
+	if err != nil {
+		log.Error().Err(err).Msg("Conta ja existe")
+		return nil, err
+	}
+
+	
+	err = client.checkContaDocExists(ctx, "documento", data.Documento)
+	if err != nil {		
+		log.Error().Err(err).Msg("Documento ja existe")
+		return nil, err
+	}
+
+	_, _, err = client.client.Collection("conta").Add(context.Background(), &data)
+	if err != nil {
+		log.Error().Err(err).Msg("Error adding document")
+		return nil, err
+	}
+	return &data, nil
+}
+
+func (client FirestoreClient) checkExists(ctx context.Context, documento *string, numeroConta *string) (error) {
+	if documento != nil {
+		return client.checkContaDocExists(ctx, "documento", *documento)
+	}
+	if numeroConta != nil {
+		return client.checkContaDocExists(ctx, "numero_conta", *numeroConta)
+	}
+	return nil
+}
+
+
+func (client FirestoreClient) checkContaDocExists(ctx context.Context, fieldName string, valueCampo string) error {	
+	query := client.client.Collection("conta").Where(fieldName, "==", valueCampo).Limit(1).Documents(ctx)
+	doc, err := query.Next()
+	if err != nil && err != iterator.Done {
+		log.Error().Err(err).Str("field", fieldName).Msg("Error querying Firestore for requested data")
+		return err
+	}
+	if doc != nil {
+		err := fmt.Errorf("query with %s '%s' already exists", fieldName, valueCampo)
+		log.Warn().Err(err).Str("field", fieldName).Msg("The information consulted already exists")
+		return err
+	}
+	return nil
+}
+
+func (client FirestoreClient) GetConta(id string) (*domain.Conta, error) {
+	doc, err := client.client.Collection("conta").
+		Where("id", "==", id).
+		Documents(context.Background()).Next()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting document")
+		return nil, err
+	}
+	var conta domain.Conta
+	doc.DataTo(&conta)
+	return &conta, nil
+}
+
+func (client FirestoreClient) AlterarConta(data domain.Conta) (*domain.Conta, error) {
+	doc, err := client.client.Collection("conta").
+		Where("id", "==", data.Id).
+		Documents(context.Background()).Next()
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting document")
+		return nil, err
+	}
+	_, err = doc.Ref.Update(context.Background(), []firestore.Update{
+		{Path: "agencia", Value: data.Agencia},
+		{Path: "digito_agencia", Value: data.DigitoAgencia},
+		{Path: "tipo_conta", Value: data.TipoConta},
+		{Path: "tipo_pessoa", Value: data.TipoPessoa},
+		{Path: "nome", Value: data.Nome},
+		{Path: "email_titular", Value: data.EmailTitular},
+		{Path: "telefone_titular", Value: data.TelefoneTitular},
+	})
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error updating document")
+		return nil, err
+	}
+	return &data, nil
+}
+
+func (client FirestoreClient) DeleteConta(id string) (*domain.Conta, error) {
+	doc, err := client.client.Collection("conta").
+		Where("id", "==", id).
+		Documents(context.Background()).Next()
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting document")
+		return nil, err
+	}
+	var conta domain.Conta
+	doc.DataTo(&conta)
+	_, err = doc.Ref.Delete(context.Background())
+	if err != nil {
+		log.Error().Err(err).Msg("Error deleting document")
+		return nil, err
+	}
+	return &conta, nil
 }

@@ -64,3 +64,45 @@ func clienteToResponse(newCliente domain.Cliente) ClienteResponse {
 	}
 	return clienteResponse
 }
+
+func contaToDomain(request CriacaoContaRequest) domain.Conta {
+	newUUID := uuid.New().String()
+	return domain.Conta{
+		Id:              newUUID,
+		CodigoBanco:     request.CodigoBanco,
+		Agencia:         request.Agencia,
+		DigitoAgencia:   request.DigitoAgencia,
+		NumeroConta:     request.NumeroConta,
+		DigitoConta:     request.DigitoConta,
+		TipoConta:       string(request.TipoConta),
+		TipoPessoa:      string(request.TipoPessoa),
+		Nome:            request.Nome,
+		Documento:       request.Documento,
+		EmailTitular:    request.EmailTitular,
+		TelefoneTitular: request.TelefoneTitular,
+		Saldo:      request.Saldo,
+		CreatedAt:       now,
+		UpdatedAt:       now,
+	}
+}
+
+func contaToResponse(newConta domain.Conta) CriacaoContaResponse {
+	contaResponse := CriacaoContaResponse{
+		Id:              newConta.Id,
+		CodigoBanco:     newConta.CodigoBanco,
+		Agencia:         newConta.Agencia,
+		DigitoAgencia:   newConta.DigitoAgencia,
+		NumeroConta:     newConta.NumeroConta,
+		DigitoConta:     newConta.DigitoConta,
+		TipoConta:       newConta.TipoConta,
+		TipoPessoa:      newConta.TipoPessoa,
+		Nome:            newConta.Nome,
+		Documento:       newConta.Documento,
+		EmailTitular:    newConta.EmailTitular,
+		TelefoneTitular: newConta.TelefoneTitular,	
+		Saldo:           newConta.Saldo,
+		CreatedAt:       newConta.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       newConta.UpdatedAt.Format(time.RFC3339),
+	}
+	return contaResponse
+}

@@ -296,7 +296,7 @@ func AlterarCliente(response http.ResponseWriter, request *http.Request) {
 	if cliRequest.CPF != "" {
 		response.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(response).Encode(ResponseError{
-			Code:    "005",
+			Code:    "006",
 			Message: "CPF não pode ser alterado",
 		})
 		return
@@ -308,7 +308,7 @@ func AlterarCliente(response http.ResponseWriter, request *http.Request) {
 		log.Error().Err(err).Msg("Erro ao consultar cliente")
 		response.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(response).Encode(ResponseError{
-			Code:    "008",
+			Code:    "007",
 			Message: "Erro ao consultar cliente",
 		})
 		return
@@ -316,7 +316,7 @@ func AlterarCliente(response http.ResponseWriter, request *http.Request) {
 	if databaseCliente == nil {
 		response.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(response).Encode(ResponseError{
-			Code:    "009",
+			Code:    "008",
 			Message: "Cliente não encontrado",
 		})
 		return
@@ -339,7 +339,7 @@ func AlterarCliente(response http.ResponseWriter, request *http.Request) {
 		log.Error().Err(err).Msg("Erro ao alterar cliente")
 		response.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(response).Encode(ResponseError{
-			Code:    "010",
+			Code:    "009",
 			Message: "Erro ao alterar cliente",
 		})
 	}
@@ -361,7 +361,7 @@ func DeletarCliente(response http.ResponseWriter, request *http.Request) {
 		log.Error().Err(err).Msg("Erro ao deletar cliente")
 		response.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(response).Encode(ResponseError{
-			Code:    "005",
+			Code:    "010",
 			Message: "Erro ao deletar cliente",
 		})
 		return
@@ -370,7 +370,7 @@ func DeletarCliente(response http.ResponseWriter, request *http.Request) {
 	if cliente == nil {
 		response.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(response).Encode(ResponseError{
-			Code:    "006",
+			Code:    "011",
 			Message: "Cliente não encontrado",
 		})
 		return
@@ -381,4 +381,184 @@ func DeletarCliente(response http.ResponseWriter, request *http.Request) {
 		"message": "Cliente deletado com sucesso",
 	})
 	log.Info().Any("user", cliente).Msg("Retorno deletar cliente")
+}
+
+func CadastrarConta(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	var conta CriacaoContaRequest
+
+	decoder := json.NewDecoder(request.Body)
+	decoder.Decode(&conta)
+
+	log.Info().Any("user", conta).Msg("Requisição cadastrar conta")
+
+	erros := validarDadosConta(conta)
+	if len(erros) > 0 {
+		response.WriteHeader(http.StatusBadRequest)
+		errosConcatenados := ""
+		for _, erro := range erros {
+			errosConcatenados += erro + ";"
+		}
+		responseError := ResponseError{
+			Code:    "001",
+			Message: errosConcatenados,
+		}
+		json.NewEncoder(response).Encode(responseError)
+		log.Info().AnErr("erros", responseError).Msg("Erro ao validar dados da conta")
+		return
+	}
+
+	newConta, err := dbClient.AddConta(contaToDomain(conta))
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao salvar conta")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "002",
+			Message: "Erro ao salvar conta",
+		})
+		return
+	}
+
+	responseObject := contaToResponse(*newConta)
+
+	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("conta", responseObject).Msg("Retorno cadastrar conta")
+}
+
+func ConsultarConta(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	vars := mux.Vars(request)
+	id := vars["id"]
+	log.Info().Str("id", id).Msg("Consultar conta por ID")
+
+	conta, err := dbClient.GetConta(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao consultar cliente")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "003",
+			Message: "Erro ao consultar conta",
+		})
+		return
+	}
+
+	if conta == nil {
+		response.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "004",
+			Message: "Conta não encontrado",
+		})
+		return
+	}
+
+	responseObject := contaToResponse(*conta)
+
+	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("conta", responseObject).Msg("Retorno consultar conta por ID")
+}
+
+func AlterarConta(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	// lê o id da URL
+	vars := mux.Vars(request)
+	id := vars["id"]
+	log.Info().Str("id", id).Msg("Alterar conta")
+
+	// lê o corpo da requisição
+	var ctaRequest AlteracaoContaRequest
+	decoder := json.NewDecoder(request.Body)
+	decoder.Decode(&ctaRequest)
+	log.Info().Any("clienteRequest", ctaRequest).Msg("Corpo da requisição")	
+
+	// buscar dados atuais no banco
+	databaseConta, err := dbClient.GetConta(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao consultar conta")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "011",
+			Message: "Erro ao consultar conta",
+		})
+		return
+	}
+	if databaseConta == nil {
+		response.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "012",
+			Message: "Conta não encontrado",
+		})
+		return
+	}
+
+	// alterar os campos no objeto do banco de acordo com o que veio na requisição
+	if ctaRequest.Agencia != "" {
+		databaseConta.Agencia = ctaRequest.Agencia
+	}
+	if ctaRequest.DigitoAgencia != "" {
+		databaseConta.DigitoAgencia = ctaRequest.DigitoAgencia
+	}
+	if ctaRequest.TipoConta != "" {
+		databaseConta.TipoConta = string(ctaRequest.TipoConta)
+	}
+	if ctaRequest.TipoPessoa != "" {
+		databaseConta.TipoPessoa = string(ctaRequest.TipoPessoa)
+	}
+	if ctaRequest.Nome != "" {
+		databaseConta.Nome = ctaRequest.Nome
+	}
+	if ctaRequest.EmailTitular != "" {
+		databaseConta.EmailTitular = ctaRequest.EmailTitular
+	}
+	if ctaRequest.TelefoneTitular != "" {
+		databaseConta.TelefoneTitular = ctaRequest.TelefoneTitular
+	}
+	
+	// salvar no banco
+	_, err = dbClient.AlterarConta(*databaseConta)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao alterar conta")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "013",
+			Message: "Erro ao alterar conta",
+		})
+	}
+
+	responseObject := contaToResponse(*databaseConta)
+
+	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("user", response).Msg("Retorno alterar conta")
+}
+
+func DeletarConta(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	vars := mux.Vars(request)
+	id := vars["id"]
+	log.Info().Str("id", id).Msg("Deletar conta")
+
+	conta, err := dbClient.DeleteConta(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao deletar conta")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "014",
+			Message: "Erro ao deletar conta",
+		})
+		return
+	}
+
+	if conta == nil {
+		response.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "015",
+			Message: "Conta não encontrado",
+		})
+		return
+	}
+
+	json.NewEncoder(response).Encode(map[string]interface{}{
+		"status":  http.StatusOK,
+		"message": "Conta deletada com sucesso",
+	})
+	log.Info().Any("conta", conta).Msg("Retorno deletar conta")
 }

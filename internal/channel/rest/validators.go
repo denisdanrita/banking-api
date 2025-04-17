@@ -73,3 +73,49 @@ func validarDadosCliente(user ClienteRequest) []string {
 
 	return erros
 }
+
+func validarDadosConta(conta CriacaoContaRequest) []string {
+	var erros []string
+
+	if conta.Documento == "" {
+		erros = append(erros, "Campo documento não preenchido")
+	}
+
+	if conta.Nome == "" {
+		erros = append(erros, "Campo nome não preenchido")
+	}
+
+	if conta.TipoPessoa == "" {		
+		erros = append(erros, "Campo tipo de pessoa não preenchido")
+	}
+
+	if conta.CodigoBanco == "" {
+		erros = append(erros, "Campo código do banco não preenchido")
+	}
+
+	if conta.Agencia == "" {
+		erros = append(erros, "Campo agência não preenchido")
+	}
+
+	if conta.TipoConta == "" {	
+		erros = append(erros, "Campo tipo de conta não preenchido")
+	}
+
+	if len(conta.Nome) > 50 {
+		erros = append(erros, "Nome deve ter no máximo 50 caracteres")
+	}
+
+	if conta.TipoPessoa == "F" && len(conta.Documento) < 11 {
+		erros = append(erros, "Documento deve ter 11 caracteres")
+	}
+	
+	if conta.TipoPessoa == "J" &&	len(conta.Documento) < 14 {
+		erros = append(erros, "Documento deve ter 14 caracteres")
+	}
+
+	if _, err := mail.ParseAddress(conta.EmailTitular); err != nil {
+		erros = append(erros, "Email inválido")
+	}
+
+	return erros
+}
