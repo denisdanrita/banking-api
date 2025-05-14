@@ -71,7 +71,7 @@ type CriacaoContaRequest struct {
 	Documento        string `json:"documento,omitempty"`
 	EmailTitular     string `json:"email_titular,omitempty"`
 	TelefoneTitular  string `json:"telefone_titular,omitempty"`
-	Saldo			 string `json:"saldo,omitempty"`
+	Saldo            float32 `json:"saldo,omitempty"`
 }
 
 type CriacaoContaResponse struct {
@@ -87,7 +87,6 @@ type CriacaoContaResponse struct {
 	Documento       string `json:"documento,omitempty"`
 	EmailTitular    string `json:"email_titular,omitempty"`
 	TelefoneTitular string `json:"telefone_titular,omitempty"`
-	Saldo		       	string `json:"saldo,omitempty"`
 	CreatedAt       string `json:"created_at,omitempty"`
 	UpdatedAt       string `json:"updated_at,omitempty"`
 }
@@ -100,4 +99,32 @@ type AlteracaoContaRequest struct {
 	Nome             string `json:"nome,omitempty"`	
 	EmailTitular     string `json:"email_titular,omitempty"`
 	TelefoneTitular  string `json:"telefone_titular,omitempty"`
+	Senha					   string `json:"senha,omitempty"`
+}
+
+type ConsultaSaldoResponse struct {
+	Saldo           float32 `json:"saldo,omitempty"`
+}
+
+type DepositoContaRequest struct {
+	NumeroConta      string `json:"numero_conta,omitempty"`
+	ValorDeposito		 float32 `json:"valor_deposito,omitempty"`
+}
+
+type DepositoContaResponse struct {	
+	NumeroConta     string `json:"numero_conta,omitempty"`
+	ValorDeposito		float32 `json:"valor_deposito,omitempty"`
+	SaldoAlterado 	string `json:"saldo_alterado,omitempty"`
+	CreatedAt       string `json:"created_at,omitempty"`
+}
+
+type SaqueContaRequest struct {
+	NumeroConta      string `json:"numero_conta,omitempty"`
+	ValorSaque  		 float32 `json:"valor_saque,omitempty"`
+}
+
+type SaqueContaResponse struct {		
+	ValorSaque		  float32 `json:"valor_saque,omitempty"`
+	SaldoAlterado 	string `json:"saldo_alterado,omitempty"`
+	CreatedAt       string `json:"created_at,omitempty"`
 }

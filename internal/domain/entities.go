@@ -40,8 +40,23 @@ type Conta struct {
 	Nome            string    `firestore:"nome"`
 	Documento       string    `firestore:"documento"`
 	EmailTitular    string    `firestore:"email_titular"`
-	TelefoneTitular	string    `firestore:"telefone_titular"`	
-	Saldo     		  string    `firestore:"saldo"`
+	TelefoneTitular string    `firestore:"telefone_titular"`
+	Saldo           float32   `firestore:"saldo"`
 	CreatedAt       time.Time `firestore:"created_at"`
 	UpdatedAt       time.Time `firestore:"updated_at"`
+}
+
+type Deposito struct {
+	Id              string    `firestore:"id"`
+	NumeroConta		  string    `firestore:"numero_conta"`
+	ValorDeposito   float32    `firestore:"valor_deposito"`
+	SaldoAlterado   float32    `firestore:"saldo_alterado"`
+	CreatedAt       time.Time  `firestore:"created_at"`
+}
+
+type Saque struct {
+	Id              string    `firestore:"id"`
+	NumeroConta		  string    `firestore:"numero_conta"`
+	ValorSaque      float32    `firestore:"valor_saque"`
+	CreatedAt       time.Time `firestore:"created_at"`
 }

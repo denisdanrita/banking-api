@@ -3,6 +3,7 @@ package rest
 import (
 	"banking/internal/domain"
 	"banking/internal/utils"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -80,7 +81,7 @@ func contaToDomain(request CriacaoContaRequest) domain.Conta {
 		Documento:       request.Documento,
 		EmailTitular:    request.EmailTitular,
 		TelefoneTitular: request.TelefoneTitular,
-		Saldo:      request.Saldo,
+		Saldo:           request.Saldo,
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
@@ -99,10 +100,44 @@ func contaToResponse(newConta domain.Conta) CriacaoContaResponse {
 		Nome:            newConta.Nome,
 		Documento:       newConta.Documento,
 		EmailTitular:    newConta.EmailTitular,
-		TelefoneTitular: newConta.TelefoneTitular,	
-		Saldo:           newConta.Saldo,
+		TelefoneTitular: newConta.TelefoneTitular,
 		CreatedAt:       newConta.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:       newConta.UpdatedAt.Format(time.RFC3339),
 	}
 	return contaResponse
+}
+
+func saldoToResponse(newConta domain.Conta) ConsultaSaldoResponse {
+	saldoResponse := ConsultaSaldoResponse{
+		Saldo: newConta.Saldo,
+	}
+	return saldoResponse
+}
+
+func depositoToDomain(request DepositoContaRequest) domain.Deposito {
+	return domain.Deposito{
+		NumeroConta:   request.NumeroConta,
+		ValorDeposito: request.ValorDeposito,
+	}
+}
+
+func depositoToResponse(saldo float32) DepositoContaResponse {
+	DepositoResponse := DepositoContaResponse{
+		SaldoAlterado: fmt.Sprintf("%.2f", saldo),
+	}
+	return DepositoResponse
+}
+
+func saqueToDomain(request SaqueContaRequest) domain.Saque {
+	return domain.Saque{
+		NumeroConta: request.NumeroConta,
+		ValorSaque:  request.ValorSaque,	
+	}
+}
+
+func saqueToResponse(saldo float32) SaqueContaResponse {
+	SaqueResponse := SaqueContaResponse{
+		SaldoAlterado: fmt.Sprintf("%.2f", saldo),	
+	}
+	return SaqueResponse
 }

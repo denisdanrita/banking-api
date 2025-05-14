@@ -29,6 +29,9 @@ func NewServer() {
 	router.HandleFunc("/conta/{id}", ConsultarConta).Methods(http.MethodGet)
 	router.HandleFunc("/conta/{id}", AlterarConta).Methods(http.MethodPut)
 	router.HandleFunc("/conta/{id}", DeletarConta).Methods(http.MethodDelete)
+	router.HandleFunc("/conta/{id}/saldo", ConsultarSaldo).Methods(http.MethodGet)
+	router.HandleFunc("/transacoes/deposito", DepositarConta).Methods(http.MethodPost)
+	router.HandleFunc("/transacoes/saque", SacarConta).Methods(http.MethodPost)
 
 	log.Info().Msg("Starting server on port 8100")
 

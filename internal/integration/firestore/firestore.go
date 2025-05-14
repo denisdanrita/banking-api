@@ -212,18 +212,12 @@ func (client FirestoreClient) DeleteCliente(id string) (*domain.Cliente, error) 
 func (client FirestoreClient) AddConta(data domain.Conta) (*domain.Conta, error) {
 	ctx := context.Background()
 	err := client.checkExists(ctx, nil, &data.NumeroConta)
-
-	err = client.checkExists(ctx, &data.Documento, nil)
-
-
-	err = client.checkContaDocExists(ctx, "numero_conta", data.NumeroConta)
 	if err != nil {
 		log.Error().Err(err).Msg("Conta ja existe")
 		return nil, err
 	}
 
-	
-	err = client.checkContaDocExists(ctx, "documento", data.Documento)
+	err = client.checkExists(ctx, &data.Documento, nil)
 	if err != nil {		
 		log.Error().Err(err).Msg("Documento ja existe")
 		return nil, err
@@ -318,4 +312,88 @@ func (client FirestoreClient) DeleteConta(id string) (*domain.Conta, error) {
 		return nil, err
 	}
 	return &conta, nil
+}
+
+func (client FirestoreClient) DepositoConta(data domain.Deposito) (*float32, error) {
+	ctx := context.Background()
+	conta, err := client.checkContaExists(ctx, "numero_conta", data.NumeroConta)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao consultar a conta")
+		return nil, err
+	}
+
+	conta.Saldo = conta.Saldo + data.ValorDeposito
+	contaToUpdate := domain.Conta{
+		Id:    conta.Id,
+		Saldo: conta.Saldo,
+	}
+	alterarSaldo, err := client.AlterarSaldoConta(contaToUpdate)
+	log.Info().Msg(fmt.Sprintf("Saldo alterado: %f", alterarSaldo.Saldo))
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao alterar o saldo")
+		return nil, err
+	}
+	return &conta.Saldo, nil
+}
+
+func (client FirestoreClient) checkContaExists(ctx context.Context, fieldName string, valueCampo string) (*domain.Conta, error) {
+	query := client.client.Collection("conta").Where(fieldName, "==", valueCampo).Limit(1).Documents(ctx)
+	doc, err := query.Next()
+	if err != nil && err != iterator.Done {
+		log.Error().Err(err).Str("field", "numero_conta").Msg("Error querying Firestore for requested data")
+		return nil, err
+	}
+	if doc != nil {
+		var conta domain.Conta
+		doc.DataTo(&conta)
+		return &conta, nil
+	}
+	return nil, fmt.Errorf("query with numero_conta '%s' not found", valueCampo)
+}
+
+func (client FirestoreClient) AlterarSaldoConta(data domain.Conta) (*domain.Conta, error) {
+	doc, err := client.client.Collection("conta").
+		Where("id", "==", data.Id).
+		Documents(context.Background()).Next()
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting document")
+		return nil, err
+	}
+	_, err = doc.Ref.Update(context.Background(), []firestore.Update{
+			{Path: "saldo", Value: data.Saldo},	
+			})	
+	if err != nil {
+		log.Error().Err(err).Msg("Error updating document")
+		return nil, err
+	}
+	return &data, nil
+}
+
+func (client FirestoreClient) SaqueConta(data domain.Saque) (*float32, error) {
+	ctx := context.Background()
+	conta, err := client.checkContaExists(ctx, "numero_conta", data.NumeroConta)
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao consultar a conta")
+		return nil, err
+	}
+
+	if conta.Saldo < data.ValorSaque {
+		log.Error().Msg("Saldo insuficiente")
+		return nil, fmt.Errorf("saldo insuficiente")
+	}
+
+	conta.Saldo = conta.Saldo - data.ValorSaque
+	contaToUpdate := domain.Conta{
+		Id:    conta.Id,
+		Saldo: conta.Saldo,
+	}
+
+	alterarSaldo, err := client.AlterarSaldoConta(contaToUpdate)
+	log.Info().Msg(fmt.Sprintf("Saldo alterado: %f", alterarSaldo.Saldo))
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao alterar o saldo")
+		return nil, err
+	}
+	return &conta.Saldo, nil
 }

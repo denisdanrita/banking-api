@@ -119,3 +119,28 @@ func validarDadosConta(conta CriacaoContaRequest) []string {
 
 	return erros
 }
+
+func validarDadosDeposito(deposito DepositoContaRequest) []string {
+	var erros []string
+	if deposito.NumeroConta == "" {
+		erros = append(erros, "Campo número da conta não preenchido")
+	}
+	if deposito.ValorDeposito == 0 {
+		erros = append(erros, "Campo valor do depósito não preenchido")
+	}
+	if deposito.ValorDeposito == 0 {	
+		erros = append(erros, "Campo valor do depósito deve ser maior que 0")
+	}
+	return erros
+}
+
+func validarDadosSaque(saque SaqueContaRequest) []string {
+	var erros []string
+	if saque.NumeroConta == "" {
+		erros = append(erros, "Campo número da conta não preenchido")
+	}
+	if saque.ValorSaque == 0 {
+		erros = append(erros, "Campo valor do depósito não preenchido")
+	}
+	return erros
+}
