@@ -2,6 +2,7 @@ package rest
 
 import (
 	"banking/internal/integration/firestore"
+	"banking/internal/service"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -9,9 +10,15 @@ import (
 )
 
 var dbClient *firestore.FirestoreClient
+var transferService service.TransferService
+var depositoService service.DepositoService
+var saqueService service.SaqueService
 
 func NewServer() {
 	dbClient = firestore.NewConnection()
+	transferService = service.NewTransferService(dbClient)
+	depositoService = service.NewDepositoService(dbClient)
+	saqueService = service.NewSaqueService(dbClient)
 	router := mux.NewRouter()
 	router.Use(autenticador)
 
@@ -30,8 +37,9 @@ func NewServer() {
 	router.HandleFunc("/conta/{id}", AlterarConta).Methods(http.MethodPut)
 	router.HandleFunc("/conta/{id}", DeletarConta).Methods(http.MethodDelete)
 	router.HandleFunc("/conta/{id}/saldo", ConsultarSaldo).Methods(http.MethodGet)
-	router.HandleFunc("/transacoes/deposito", DepositarConta).Methods(http.MethodPost)
-	router.HandleFunc("/transacoes/saque", SacarConta).Methods(http.MethodPost)
+	router.HandleFunc("/transacoes/deposito", Depositar).Methods(http.MethodPost)
+	router.HandleFunc("/transacoes/saque", Sacar).Methods(http.MethodPost)
+	router.HandleFunc("/transacoes/transferir", Transferir).Methods(http.MethodPost)
 
 	log.Info().Msg("Starting server on port 8100")
 

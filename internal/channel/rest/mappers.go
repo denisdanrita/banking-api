@@ -131,13 +131,29 @@ func depositoToResponse(saldo float32) DepositoContaResponse {
 func saqueToDomain(request SaqueContaRequest) domain.Saque {
 	return domain.Saque{
 		NumeroConta: request.NumeroConta,
-		ValorSaque:  request.ValorSaque,	
+		ValorSaque:  request.ValorSaque,
 	}
 }
 
 func saqueToResponse(saldo float32) SaqueContaResponse {
 	SaqueResponse := SaqueContaResponse{
-		SaldoAlterado: fmt.Sprintf("%.2f", saldo),	
+		SaldoAlterado: fmt.Sprintf("%.2f", saldo),
 	}
 	return SaqueResponse
+}
+
+func transferenciaToDomain(request TransferenciaContaRequest) domain.Transferencia {
+	return domain.Transferencia{
+		NumeroContaOrigem:  request.NumeroContaOrigem,
+		NumeroContaDestino: request.NumeroContaDestino,
+		ValorTransferencia: request.ValorTransferencia,
+	}
+}
+
+func transferenciaToResponse(saldoOrigem, saldoDestino float32) TransferenciaContaResponse {
+	TransferenciaResponse := TransferenciaContaResponse{
+		SaldoAlteradoOrigem:  saldoOrigem,
+		SaldoAlteradoDestino: saldoDestino,
+	}
+	return TransferenciaResponse
 }

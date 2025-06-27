@@ -36,7 +36,7 @@ type Conta struct {
 	NumeroConta     string    `firestore:"numero_conta"`
 	DigitoConta     string    `firestore:"digito_conta"`
 	TipoConta       string    `firestore:"tipo_conta"`
-	TipoPessoa			string    `firestore:"tipo_pessoa"`
+	TipoPessoa      string    `firestore:"tipo_pessoa"`
 	Nome            string    `firestore:"nome"`
 	Documento       string    `firestore:"documento"`
 	EmailTitular    string    `firestore:"email_titular"`
@@ -47,16 +47,23 @@ type Conta struct {
 }
 
 type Deposito struct {
-	Id              string    `firestore:"id"`
-	NumeroConta		  string    `firestore:"numero_conta"`
-	ValorDeposito   float32    `firestore:"valor_deposito"`
-	SaldoAlterado   float32    `firestore:"saldo_alterado"`
-	CreatedAt       time.Time  `firestore:"created_at"`
+	Id            string    `firestore:"id"`
+	NumeroConta   string    `firestore:"numero_conta"`
+	ValorDeposito float32   `firestore:"valor_deposito"`
+	SaldoAlterado float32   `firestore:"saldo_alterado"`
+	CreatedAt     time.Time `firestore:"created_at"`
 }
 
 type Saque struct {
-	Id              string    `firestore:"id"`
-	NumeroConta		  string    `firestore:"numero_conta"`
-	ValorSaque      float32    `firestore:"valor_saque"`
-	CreatedAt       time.Time `firestore:"created_at"`
+	Id          string    `firestore:"id"`
+	NumeroConta string    `firestore:"numero_conta"`
+	ValorSaque  float32   `firestore:"valor_saque"`
+	CreatedAt   time.Time `firestore:"created_at"`
+}
+type Transferencia struct {
+	Id                 string    `firestore:"id"`
+	NumeroContaOrigem  string    `firestore:"numero_conta_origem"`
+	NumeroContaDestino string    `firestore:"numero_conta_destino"`
+	ValorTransferencia float32   `firestore:"valor_transferencia"`
+	CreatedAt          time.Time `firestore:"created_at"`
 }

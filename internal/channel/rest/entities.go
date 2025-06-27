@@ -1,16 +1,18 @@
 package rest
 
 type TipoPessoa string
+
 const (
-	TipoPessoaFisica TipoPessoa = "FISICA"
+	TipoPessoaFisica   TipoPessoa = "FISICA"
 	TipoPessoaJuridica TipoPessoa = "JURIDICA"
 )
 
 type TipoConta string
+
 const (
 	TipoContaCorrente TipoConta = "CORRENTE"
 	TipoContaPoupanca TipoConta = "POUPANCA"
-)	
+)
 
 type UsuarioRequest struct {
 	Nome     string `json:"nome,omitempty"`
@@ -60,18 +62,18 @@ type ClienteResponse struct {
 }
 
 type CriacaoContaRequest struct {
-	CodigoBanco      string `json:"codigo_banco,omitempty"`
-	Agencia          string `json:"agencia,omitempty"`
-	DigitoAgencia    string `json:"digito_agencia,omitempty"`
-	NumeroConta      string `json:"numero_conta,omitempty"`
-	DigitoConta      string `json:"digito_conta,omitempty"`
-	TipoConta        TipoConta `json:"tipo_conta,omitempty"`
-	TipoPessoa			 TipoPessoa `json:"tipo_pessoa,omitempty"`
-	Nome             string `json:"nome,omitempty"`
-	Documento        string `json:"documento,omitempty"`
-	EmailTitular     string `json:"email_titular,omitempty"`
-	TelefoneTitular  string `json:"telefone_titular,omitempty"`
-	Saldo            float32 `json:"saldo,omitempty"`
+	CodigoBanco     string     `json:"codigo_banco,omitempty"`
+	Agencia         string     `json:"agencia,omitempty"`
+	DigitoAgencia   string     `json:"digito_agencia,omitempty"`
+	NumeroConta     string     `json:"numero_conta,omitempty"`
+	DigitoConta     string     `json:"digito_conta,omitempty"`
+	TipoConta       TipoConta  `json:"tipo_conta,omitempty"`
+	TipoPessoa      TipoPessoa `json:"tipo_pessoa,omitempty"`
+	Nome            string     `json:"nome,omitempty"`
+	Documento       string     `json:"documento,omitempty"`
+	EmailTitular    string     `json:"email_titular,omitempty"`
+	TelefoneTitular string     `json:"telefone_titular,omitempty"`
+	Saldo           float32    `json:"saldo,omitempty"`
 }
 
 type CriacaoContaResponse struct {
@@ -82,7 +84,7 @@ type CriacaoContaResponse struct {
 	NumeroConta     string `json:"numero_conta,omitempty"`
 	DigitoConta     string `json:"digito_conta,omitempty"`
 	TipoConta       string `json:"tipo_conta,omitempty"`
-	TipoPessoa			string `json:"tipo_pessoa,omitempty"`
+	TipoPessoa      string `json:"tipo_pessoa,omitempty"`
 	Nome            string `json:"nome,omitempty"`
 	Documento       string `json:"documento,omitempty"`
 	EmailTitular    string `json:"email_titular,omitempty"`
@@ -91,40 +93,50 @@ type CriacaoContaResponse struct {
 	UpdatedAt       string `json:"updated_at,omitempty"`
 }
 
-type AlteracaoContaRequest struct {	
-	Agencia          string `json:"agencia,omitempty"`
-	DigitoAgencia    string `json:"digito_agencia,omitempty"`
-	TipoConta        TipoConta `json:"tipo_conta,omitempty"`
-	TipoPessoa			 TipoPessoa `json:"tipo_pessoa,omitempty"`
-	Nome             string `json:"nome,omitempty"`	
-	EmailTitular     string `json:"email_titular,omitempty"`
-	TelefoneTitular  string `json:"telefone_titular,omitempty"`
-	Senha					   string `json:"senha,omitempty"`
+type AlteracaoContaRequest struct {
+	Agencia         string     `json:"agencia,omitempty"`
+	DigitoAgencia   string     `json:"digito_agencia,omitempty"`
+	TipoConta       TipoConta  `json:"tipo_conta,omitempty"`
+	TipoPessoa      TipoPessoa `json:"tipo_pessoa,omitempty"`
+	Nome            string     `json:"nome,omitempty"`
+	EmailTitular    string     `json:"email_titular,omitempty"`
+	TelefoneTitular string     `json:"telefone_titular,omitempty"`
+	Senha           string     `json:"senha,omitempty"`
 }
 
 type ConsultaSaldoResponse struct {
-	Saldo           float32 `json:"saldo,omitempty"`
+	Saldo float32 `json:"saldo,omitempty"`
 }
 
 type DepositoContaRequest struct {
-	NumeroConta      string `json:"numero_conta,omitempty"`
-	ValorDeposito		 float32 `json:"valor_deposito,omitempty"`
+	NumeroConta   string  `json:"numero_conta,omitempty"`
+	ValorDeposito float32 `json:"valor_deposito,omitempty"`
 }
 
-type DepositoContaResponse struct {	
-	NumeroConta     string `json:"numero_conta,omitempty"`
-	ValorDeposito		float32 `json:"valor_deposito,omitempty"`
-	SaldoAlterado 	string `json:"saldo_alterado,omitempty"`
-	CreatedAt       string `json:"created_at,omitempty"`
+type DepositoContaResponse struct {
+	NumeroConta   string  `json:"numero_conta,omitempty"`
+	ValorDeposito float32 `json:"valor_deposito,omitempty"`
+	SaldoAlterado string  `json:"saldo_alterado,omitempty"`
+	CreatedAt     string  `json:"created_at,omitempty"`
 }
 
 type SaqueContaRequest struct {
-	NumeroConta      string `json:"numero_conta,omitempty"`
-	ValorSaque  		 float32 `json:"valor_saque,omitempty"`
+	NumeroConta string  `json:"numero_conta,omitempty"`
+	ValorSaque  float32 `json:"valor_saque,omitempty"`
 }
 
-type SaqueContaResponse struct {		
-	ValorSaque		  float32 `json:"valor_saque,omitempty"`
-	SaldoAlterado 	string `json:"saldo_alterado,omitempty"`
-	CreatedAt       string `json:"created_at,omitempty"`
+type SaqueContaResponse struct {
+	ValorSaque    float32 `json:"valor_saque,omitempty"`
+	SaldoAlterado string  `json:"saldo_alterado,omitempty"`
+	CreatedAt     string  `json:"created_at,omitempty"`
+}
+
+type TransferenciaContaRequest struct {
+	NumeroContaOrigem  string  `json:"numero_conta_origem,omitempty"`
+	NumeroContaDestino string  `json:"numero_conta_destino,omitempty"`
+	ValorTransferencia float32 `json:"valor_transferencia,omitempty"`
+}
+type TransferenciaContaResponse struct {
+	SaldoAlteradoOrigem  float32 `json:"saldo_alterado_origem,omitempty"`
+	SaldoAlteradoDestino float32 `json:"saldo_alterado_destino,omitempty"`
 }

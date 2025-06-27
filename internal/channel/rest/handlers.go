@@ -433,7 +433,7 @@ func ConsultarConta(response http.ResponseWriter, request *http.Request) {
 
 	conta, err := dbClient.GetConta(id)
 	if err != nil {
-		log.Error().Err(err).Msg("Erro ao consultar cliente")
+		log.Error().Err(err).Msg("Erro ao consultar conta")
 		response.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(response).Encode(ResponseError{
 			Code:    "003",
@@ -468,8 +468,7 @@ func AlterarConta(response http.ResponseWriter, request *http.Request) {
 	var ctaRequest AlteracaoContaRequest
 	decoder := json.NewDecoder(request.Body)
 	decoder.Decode(&ctaRequest)
-	log.Info().Any("clienteRequest", ctaRequest).Msg("Corpo da requisição")	
-
+	log.Info().Any("clienteRequest", ctaRequest).Msg("Corpo da requisição")
 
 	// buscar dados atuais no banco
 	databaseConta, err := dbClient.GetConta(id)
@@ -486,7 +485,7 @@ func AlterarConta(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(response).Encode(ResponseError{
 			Code:    "012",
-			Message: "Conta não encontrado",
+			Message: "Conta não encontrada",
 		})
 		return
 	}
@@ -513,7 +512,7 @@ func AlterarConta(response http.ResponseWriter, request *http.Request) {
 	if ctaRequest.TelefoneTitular != "" {
 		databaseConta.TelefoneTitular = ctaRequest.TelefoneTitular
 	}
-	
+
 	// salvar no banco
 	_, err = dbClient.AlterarConta(*databaseConta)
 	if err != nil {
@@ -537,7 +536,7 @@ func DeletarConta(response http.ResponseWriter, request *http.Request) {
 	id := vars["id"]
 	log.Info().Str("id", id).Msg("Deletar conta")
 
-	conta, err := dbClient.DeleteConta(id)
+	conta, _, err := dbClient.GetByID(id)
 	if err != nil {
 		log.Error().Err(err).Msg("Erro ao deletar conta")
 		response.WriteHeader(http.StatusInternalServerError)
@@ -552,7 +551,7 @@ func DeletarConta(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(response).Encode(ResponseError{
 			Code:    "015",
-			Message: "Conta não encontrado",
+			Message: "Conta não encontrada",
 		})
 		return
 	}
@@ -570,7 +569,7 @@ func ConsultarSaldo(response http.ResponseWriter, request *http.Request) {
 	id := vars["id"]
 	log.Info().Str("id", id).Msg("Consultar saldo da conta")
 
-	conta, err := dbClient.GetConta(id)	
+	conta, err := dbClient.GetConta(id)
 	if err != nil {
 		log.Error().Err(err).Msg("Erro ao consultar conta")
 		response.WriteHeader(http.StatusInternalServerError)
@@ -585,7 +584,7 @@ func ConsultarSaldo(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(response).Encode(ResponseError{
 			Code:    "004",
-			Message: "Conta não encontrado",
+			Message: "Conta não encontrada",
 		})
 		return
 	}
@@ -596,7 +595,7 @@ func ConsultarSaldo(response http.ResponseWriter, request *http.Request) {
 	log.Info().Any("saldo", responseObject).Msg("Retorno saldo conta")
 }
 
-func DepositarConta(response http.ResponseWriter, request *http.Request) {
+func Depositar(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("Content-Type", "application/json")
 	var deposito DepositoContaRequest
 
@@ -621,8 +620,8 @@ func DepositarConta(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	newDeposito, err := dbClient.DepositoConta(depositoToDomain(deposito))
-	
+	newDeposito, err := depositoService.DepositoConta(depositoToDomain(deposito))
+
 	if err != nil {
 		log.Error().Err(err).Msg("Erro ao realizar deposito")
 		response.WriteHeader(http.StatusInternalServerError)
@@ -639,7 +638,7 @@ func DepositarConta(response http.ResponseWriter, request *http.Request) {
 	log.Info().Any("deposito", responseObject).Msg("Retorno depositar conta")
 }
 
-func SacarConta(response http.ResponseWriter, request *http.Request) {
+func Sacar(response http.ResponseWriter, request *http.Request) {
 	response.Header().Add("Content-Type", "application/json")
 	var saque SaqueContaRequest
 
@@ -664,7 +663,8 @@ func SacarConta(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	newSaque, err := dbClient.SaqueConta(saqueToDomain(saque))
+	newSaque, err := saqueService.SaqueConta(saqueToDomain(saque))
+
 	if err != nil {
 		log.Error().Err(err).Msg("Erro ao realizar saque")
 		response.WriteHeader(http.StatusInternalServerError)
@@ -679,4 +679,31 @@ func SacarConta(response http.ResponseWriter, request *http.Request) {
 
 	json.NewEncoder(response).Encode(responseObject)
 	log.Info().Any("saque", responseObject).Msg("Retorno sacar conta")
+}
+
+func Transferir(response http.ResponseWriter, request *http.Request) {
+	response.Header().Add("Content-Type", "application/json")
+	var transfer TransferenciaContaRequest
+
+	decoder := json.NewDecoder(request.Body)
+	decoder.Decode(&transfer)
+
+	log.Info().Any("transfer", transfer).Msg("Requisição transferencia conta")
+
+	saldos, err := transferService.TransferirConta(transferenciaToDomain(transfer))
+
+	if err != nil {
+		log.Error().Err(err).Msg("Erro ao realizar transferência")
+		response.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(response).Encode(ResponseError{
+			Code:    "002",
+			Message: "Erro ao salvar transferência",
+		})
+		return
+	}
+
+	responseObject := transferenciaToResponse(saldos.SaldoDestino, saldos.SaldoOrigem)
+
+	json.NewEncoder(response).Encode(responseObject)
+	log.Info().Any("transferir", responseObject).Msg("Retorno transferir conta")
 }
